@@ -1,0 +1,15 @@
+========================================================================
+ROHITH'S SYSTEM Blueprints & Personal Context Manual
+========================================================================
+
+[Section 1: The MazeRunner Robot Project Architecture]
+The MazeRunner robot is built entirely from scratch utilizing the hardware abstraction layers of the Arduino platform. The core sensory array consists of an integrated ultrasonic sensor mounted on the front chassis for distance estimation, paired with infrared (IR) proximity sensors for tight boundary wall detection. The navigation algorithm operates on a Left-Hand-Rule state machine loop implemented natively in C++. The robot handles wheel speed calibrations dynamically through pulse-width modulation (PWM) signals fed directly into an L298N H-bridge dual-motor controller.
+
+[Section 2: The Humanoid Robot Cognitive Layer]
+The experimental Humanoid Robot project leverages a hybrid architecture combining local logic with advanced reasoning engines. The primary speech and dialogue brain is driven by a Large Language Model (GPT API framework), enabling natural verbal human-robot interactions. Execution commands and motor trajectories are parsed as structured JSON payloads. The instruction handler intercepts these JSON packets to trigger physical kinetic actions (such as limb movements and orientation updates) using low-latency servo controllers.
+
+[Section 3: Academic Tracking & Nanotechnology Milestones]
+Rohith is a graduate student pursuing a Master of Science (MS) degree in Nanotechnology. The current research focus is locked into advanced organic chemistry mechanics, with specific deep-dives into reaction mechanisms, molecular orbital theory, resonance structures, and symmetry-controlled processes. Key technical frameworks being mastered include the Woodward-Hoffmann rules for pericyclic reactions, pyrrole stability indices, and Diels-Alder regioselectivity parameters.
+
+[Section 4: Machine Learning & Operational Infrastructure]
+Software development and algorithmic validation are executed using a Python 3.11 virtual environment isolated natively at C:\Developer\LLM\.venv. For machine learning practice, algorithmic mastery, and neural network matrix logic construction, the primary platform utilized is Deep-ML, chosen specifically over LeetCode for its hands-on architectural design focus. Professional growth milestones include tracking towards a specialized Machine Learning internship via the Launched Global engineering placement program.
