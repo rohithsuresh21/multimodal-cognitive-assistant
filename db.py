@@ -8,4 +8,4 @@ def init_db():
     global client
     if client is None:
         client = QdrantClient(path=DB_PATH)
-    return client
+    return client 
