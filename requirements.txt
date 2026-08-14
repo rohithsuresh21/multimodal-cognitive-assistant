@@ -1,7 +1,9 @@
 fastapi
+flask-cors
 uvicorn[standard]
 numpy
 qdrant-client
 sentence-transformers
 pypdf
 python-docx
+python-multipart
