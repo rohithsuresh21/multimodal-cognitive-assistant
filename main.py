@@ -73,7 +73,7 @@ async def upload_file(file: UploadFile = File(...)):
 
         return {"status": "success", "file": file.filename,
                 "word_count": word_count,
-                "message": f"Ingested {word_count} words from {file.filename}."}
+                "message": f"Uploaded successfully ({word_count} words)"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
