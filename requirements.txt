@@ -1,7 +1,7 @@
 fastapi
-flask-cors
 uvicorn[standard]
 numpy
+torch==2.12.1+cu130
 qdrant-client
 sentence-transformers
 pypdf
