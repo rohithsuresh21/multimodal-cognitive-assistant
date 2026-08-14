@@ -1,13 +1,6 @@
 import threading
 
-import torch
-
-# Keep PyTorch memory low on small (Render free 512MB) instances.
-torch.set_num_threads(1)
-torch.set_num_interop_threads(1)
-
 from qdrant_client import QdrantClient
-from sentence_transformers import SentenceTransformer
 
 DB_PATH = "./local_qdrant"
 COLLECTION_NAME = "personal_memory"
@@ -27,17 +20,35 @@ def _get_client() -> QdrantClient:
     return _client
 
 
-def _get_encoder() -> SentenceTransformer:
+def _has_data() -> bool:
+    """True only if the Qdrant collection exists AND has points."""
+    try:
+        info = _get_client().get_collection(COLLECTION_NAME)
+        return info.points_count > 0
+    except Exception:
+        return False
+
+
+def _get_encoder():
     global _encoder
     if _encoder is None:
         with _lock:
             if _encoder is None:
+                # torch is imported lazily: it costs ~250MB RAM, only pay for it
+                # when there is actually ingested data to embed against.
+                import torch
+                torch.set_num_threads(1)
+                torch.set_num_interop_threads(1)
+                from sentence_transformers import SentenceTransformer
                 _encoder = SentenceTransformer("all-MiniLM-L6-v2")
     return _encoder
 
 
 def retrieve(query: str) -> str:
     """Search local Qdrant for the most relevant chunks for a given query."""
+    if not _has_data():
+        # No ingested knowledge yet: skip model load entirely to avoid OOM.
+        return ""
     try:
         query_vector = _get_encoder().encode(query).tolist()
         results = _get_client().search(
