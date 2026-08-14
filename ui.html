@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCA Multimodal Cognitive Assistant</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg-card: #111827;
+      --accent: #00d4aa;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #334155;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0; padding: 2rem;
+    }
+    .container { max-width: 900px; }
+    .header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .header h1 { font-size: 1.75rem; background: var(--accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+    .panel { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; background: var(--bg-card); margin-bottom: 1rem; }
+    .btn { padding: 0.6rem 1rem; border: none; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 500; cursor: pointer; margin-top: 0.5rem; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 0.8rem; margin-top: 0.25rem; }
+    input[type="text"] { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: #0f172a; color: var(--text); box-sizing: border-box; }
+    .log-area { height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; background: #0f172a; font-size: 0.85rem; }
+    .log-area p { margin: 0.3rem 0; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1><span class="accent">MCA</span> Assistant</h1>
+    </header>
+    <main>
+      <div class="panel upload-panel">
+        <h2>Upload Knowledge</h2>
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.csv">
+        <button class="btn" id="uploadBtn">Upload File</button>
+        <div class="hint">Supported: .txt, .pdf, .docx, .csv</div>
+      </div>
+      <div class="panel chat-panel">
+        <h2>Chat Assistant</h2>
+        <input type="text" id="queryInput" placeholder="Ask a question about your documents...">
+        <button class="btn" id="sendBtn">Send</button>
+      </div>
+      <div class="panel log-panel">
+        <h2>Log</h2>
+        <div class="log-area" id="log"></div>
+      </div>
+    </main>
+  </div>
+  <script>
+    // Same origin as the API (served by the backend), so no hardcoded URL needed.
+    const API = '';
+
+    document.getElementById('uploadBtn').addEventListener('click', uploadFile);
+
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) {
+        addLog('⚠️ No file selected');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', file);
+      addLog(`⏳ Uploading ${file.name}...`);
+      try {
+        const r = await fetch(`${API}/upload`, { method: 'POST', body: formData });
+        const data = await r.json();
+        if (!r.ok || data.status !== 'success') {
+          addLog(`❌ Upload failed: ${data.detail || data.message || r.status}`);
+          return;
+        }
+        addLog(`✅ ${data.message}`);
+      } catch (err) {
+        addLog(`❌ Upload error: ${err.message}`);
+      }
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', chat);
+    document.getElementById('queryInput').addEventListener('keypress', e => {
+      if (e.key === 'Enter') chat();
+    });
+
+    function chat() {
+      const input = document.getElementById('queryInput');
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = '';
+      addLog('⏳ Thinking...');
+      fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: q, history: [] })
+      })
+        .then(r => r.json())
+        .then(data => {
+          const reply = data && typeof data === 'object' && (data.reply || data.response)
+            ? (data.reply || data.response)
+            : JSON.stringify(data);
+          addLog(`🤖 ${reply}`);
+        })
+        .catch(err => addLog(`❌ Generation error: ${err.message}`));
+    }
+
+    function addLog(msg) {
+      const log = document.getElementById('log');
+      const p = document.createElement('p');
+      p.innerText = ` ${new Date().toLocaleTimeString()} ${msg}`;
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    }
+  </script>
+</body>
+</html>
