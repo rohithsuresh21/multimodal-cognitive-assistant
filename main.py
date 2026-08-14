@@ -5,8 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from ingest import ingest_knowledge
-from retrieval import retrieve
-from llm_engine import chat as llm_chat
 from file_handler import extract_text, SUPPORTED_TYPES
 
 app = FastAPI(title="Multimodal Cognitive Assistant")
@@ -33,7 +31,14 @@ class ChatRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def serve_ui():
     """Serve the built-in web UI."""
-    return HTMLResponse(content=open("ui.html").read())
+    try:
+        with open("ui.html", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content=(
+            "<h3>Multimodal Cognitive Assistant</h3>"
+            "<p>ui.html is not deployed yet. Use <a href='/docs'>/docs</a> to test the API.</p>"
+        ))
 
 
 @app.post("/upload")
@@ -81,10 +86,18 @@ async def list_files():
 
 @app.post("/chat")
 async def chat_endpoint(req: ChatRequest):
-    """RAG chat: retrieve context from local DB, then ask Mistral."""
+    """RAG chat: retrieve context from local DB, then ask the LLM engine."""
+    # Imported lazily so torch/sentence-transformers are NOT loaded at startup.
+    from retrieval import retrieve
     context = retrieve(req.text)
-    result = llm_chat(req.text, context=context, history=req.history)
-    return result
+    try:
+        from llm_engine import chat as llm_chat
+    except ImportError:
+        return {
+            "reply": "The LLM engine (llm_engine.py) is not deployed yet.",
+            "context": context,
+        }
+    return llm_chat(req.text, context=context, history=req.history)
 
 
 @app.get("/health")

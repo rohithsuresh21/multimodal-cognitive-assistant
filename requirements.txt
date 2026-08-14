@@ -1,9 +1,11 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 fastapi
 flask-cors
 uvicorn[standard]
 numpy
 qdrant-client
 sentence-transformers
+torch==2.13.0+cpu
 pypdf
 python-docx
 python-multipart
